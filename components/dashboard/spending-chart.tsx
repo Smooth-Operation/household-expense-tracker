@@ -1,6 +1,8 @@
 'use client'
 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
+import type { HouseholdSettings } from '@/lib/types'
+import { DEFAULT_SETTINGS } from '@/lib/types'
 
 interface SpendingData {
   name: string
@@ -10,6 +12,7 @@ interface SpendingData {
 
 interface Props {
   data: SpendingData[]
+  settings?: HouseholdSettings
 }
 
 const COLORS = [
@@ -23,11 +26,11 @@ const COLORS = [
   '#ffc658'
 ]
 
-export function SpendingChart({ data }: Props) {
+export function SpendingChart({ data, settings = DEFAULT_SETTINGS }: Props) {
   const formatCurrency = (value: number) => {
-    return value.toLocaleString('de-DE', {
+    return value.toLocaleString(settings.locale, {
       style: 'currency',
-      currency: 'EUR',
+      currency: settings.currency,
       maximumFractionDigits: 0
     })
   }

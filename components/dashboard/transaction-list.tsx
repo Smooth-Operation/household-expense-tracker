@@ -11,23 +11,27 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { deleteTransactionAction } from '@/app/actions'
-import type { Transaction } from '@/lib/types'
+import type { Transaction, HouseholdSettings } from '@/lib/types'
+import { DEFAULT_SETTINGS } from '@/lib/types'
 
 interface Props {
   transactions: Transaction[]
+  settings?: HouseholdSettings
   compact?: boolean
 }
 
-export function TransactionList({ transactions, compact = false }: Props) {
+export function TransactionList({ transactions, settings = DEFAULT_SETTINGS, compact = false }: Props) {
   const formatCurrency = (amount: number) => {
-    return Math.abs(amount).toLocaleString('de-DE', {
+    return Math.abs(amount).toLocaleString(settings.locale, {
       style: 'currency',
-      currency: 'EUR'
+      currency: settings.currency,
+      minimumFractionDigits: settings.showCents ? 2 : 0,
+      maximumFractionDigits: settings.showCents ? 2 : 0,
     })
   }
 
   const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('de-DE', {
+    return new Date(date).toLocaleDateString(settings.locale, {
       day: '2-digit',
       month: '2-digit'
     })

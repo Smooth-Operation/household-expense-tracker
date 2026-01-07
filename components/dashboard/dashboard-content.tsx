@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { OverviewCards } from './overview-cards'
 import { SpendingChart } from './spending-chart'
+import { MonthlyTrendChart } from './monthly-trend-chart'
+import { IncomeExpenseChart } from './income-expense-chart'
 import { TransactionList } from './transaction-list'
 import { AddTransactionDialog } from './add-transaction-dialog'
 import { AddAccountDialog } from './add-account-dialog'
@@ -24,6 +26,7 @@ interface Props {
   categories: Category[]
   accounts: Account[]
   transactions: Transaction[]
+  allTransactions: Transaction[] // For trend chart (last 6 months)
   budgets: Budget[]
   currentMonth: string
 }
@@ -35,10 +38,12 @@ export function DashboardContent({
   categories,
   accounts,
   transactions,
+  allTransactions,
   budgets,
   currentMonth
 }: Props) {
   const [showInviteCode, setShowInviteCode] = useState(false)
+  const settings = household.settings || DEFAULT_SETTINGS
 
   // Calculate overview stats
   const stats = useMemo(() => {
@@ -88,6 +93,39 @@ export function DashboardContent({
       .sort((a, b) => b.value - a.value)
       .slice(0, 8)
   }, [transactions, budgets])
+
+  // Calculate monthly trend data for last 6 months
+  const monthlyTrend = useMemo(() => {
+    const monthData = new Map<string, { income: number; expenses: number }>()
+
+    // Initialize last 6 months
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date()
+      date.setMonth(date.getMonth() - i)
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+      monthData.set(monthKey, { income: 0, expenses: 0 })
+    }
+
+    // Aggregate transactions
+    allTransactions.forEach((t) => {
+      const monthKey = t.date.substring(0, 7)
+      const data = monthData.get(monthKey)
+      if (data) {
+        const amount = Math.abs(t.amount)
+        if (t.category?.type === 'income') {
+          data.income += amount
+        } else {
+          data.expenses += amount
+        }
+      }
+    })
+
+    return Array.from(monthData.entries()).map(([month, data]) => ({
+      month,
+      income: data.income,
+      expenses: data.expenses,
+    }))
+  }, [allTransactions])
 
   const expenseCategories = categories.filter(c => c.type === 'expense')
   const incomeCategories = categories.filter(c => c.type === 'income')
@@ -170,15 +208,30 @@ export function DashboardContent({
               balance={stats.balance}
             />
 
-            <div className="grid gap-6 md:grid-cols-2">
+            {/* Charts Row */}
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Income vs Expenses</CardTitle>
+                  <CardDescription>This month&apos;s breakdown</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <IncomeExpenseChart
+                    income={stats.income}
+                    expenses={stats.expenses}
+                    settings={settings}
+                  />
+                </CardContent>
+              </Card>
+
               <Card>
                 <CardHeader>
                   <CardTitle>Spending by Category</CardTitle>
-                  <CardDescription>Top expense categories this month</CardDescription>
+                  <CardDescription>Top expense categories</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {categorySpending.length > 0 ? (
-                    <SpendingChart data={categorySpending} />
+                    <SpendingChart data={categorySpending} settings={settings} />
                   ) : (
                     <p className="text-sm text-muted-foreground text-center py-8">
                       No expenses recorded yet
@@ -187,7 +240,7 @@ export function DashboardContent({
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="md:col-span-2 lg:col-span-1">
                 <CardHeader>
                   <CardTitle>Recent Transactions</CardTitle>
                   <CardDescription>Latest activity</CardDescription>
@@ -195,11 +248,23 @@ export function DashboardContent({
                 <CardContent>
                   <TransactionList
                     transactions={transactions.slice(0, 5)}
+                    settings={settings}
                     compact
                   />
                 </CardContent>
               </Card>
             </div>
+
+            {/* Monthly Trend */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Monthly Trend</CardTitle>
+                <CardDescription>Income vs expenses over the last 6 months</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <MonthlyTrendChart data={monthlyTrend} settings={settings} />
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Transactions Tab */}
