@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import type { HouseholdSettings } from '@/lib/types'
 
 export async function createHouseholdAction(formData: FormData) {
   const supabase = await createClient()
@@ -171,4 +172,28 @@ export async function updateBudgetAction(formData: FormData) {
 
   revalidatePath('/dashboard')
   return { success: true, budget: data }
+}
+
+export async function updateHouseholdSettingsAction(
+  householdId: string,
+  settings: HouseholdSettings
+) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { error: 'Not authenticated' }
+  }
+
+  const { error } = await supabase
+    .from('households')
+    .update({ settings })
+    .eq('id', householdId)
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  revalidatePath('/dashboard')
+  return { success: true }
 }

@@ -12,7 +12,10 @@ import { TransactionList } from './transaction-list'
 import { AddTransactionDialog } from './add-transaction-dialog'
 import { AddAccountDialog } from './add-account-dialog'
 import { BudgetList } from './budget-list'
-import type { Household, HouseholdMember, Category, Account, Transaction, Budget } from '@/lib/types'
+import { SettingsDialog } from '@/components/settings/settings-dialog'
+import { formatCurrency } from '@/lib/format'
+import type { Household, HouseholdMember, Category, Account, Transaction, Budget, HouseholdSettings } from '@/lib/types'
+import { DEFAULT_SETTINGS } from '@/lib/types'
 
 interface Props {
   household: Household
@@ -123,6 +126,10 @@ export function DashboardContent({
                   {currentMember.role}
                 </Badge>
               </div>
+              <SettingsDialog
+                householdId={household.id}
+                settings={household.settings || DEFAULT_SETTINGS}
+              />
               <SignOutButton />
             </div>
           </div>
@@ -257,10 +264,7 @@ export function DashboardContent({
                       </CardHeader>
                       <CardContent>
                         <p className={`text-2xl font-bold ${currentBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {currentBalance.toLocaleString('de-DE', {
-                            style: 'currency',
-                            currency: account.currency
-                          })}
+                          {formatCurrency(currentBalance, household.settings || DEFAULT_SETTINGS)}
                         </p>
                       </CardContent>
                     </Card>

@@ -4,10 +4,25 @@ export type Role = 'owner' | 'admin' | 'member';
 export type CategoryType = 'income' | 'expense';
 export type AccountType = 'checking' | 'savings' | 'cash' | 'credit_card' | 'other';
 
+export interface HouseholdSettings {
+  currency: string;
+  locale: string;
+  dateFormat: string;
+  showCents: boolean;
+}
+
+export const DEFAULT_SETTINGS: HouseholdSettings = {
+  currency: 'EUR',
+  locale: 'de-DE',
+  dateFormat: 'dd.MM.yyyy',
+  showCents: true,
+};
+
 export interface Household {
   id: string;
   name: string;
   invite_code: string;
+  settings: HouseholdSettings;
   created_at: string;
   updated_at: string;
 }
