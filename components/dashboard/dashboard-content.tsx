@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { useRealtimeSync } from '@/hooks/use-realtime-sync'
 import { SignOutButton } from '@/components/auth/sign-out-button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -45,6 +46,9 @@ export function DashboardContent({
   currentMonth
 }: Props) {
   const settings = household.settings || DEFAULT_SETTINGS
+
+  // Subscribe to realtime updates
+  useRealtimeSync(household.id)
 
   // Calculate overview stats
   const stats = useMemo(() => {
