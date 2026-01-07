@@ -2,8 +2,13 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { HouseholdSetup } from '@/components/household/household-setup'
 
-export default async function SetupPage() {
+interface Props {
+  searchParams: Promise<{ code?: string }>
+}
+
+export default async function SetupPage({ searchParams }: Props) {
   const supabase = await createClient()
+  const params = await searchParams
 
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -31,7 +36,10 @@ export default async function SetupPage() {
             Create a new household or join an existing one
           </p>
         </div>
-        <HouseholdSetup userEmail={user.email || ''} />
+        <HouseholdSetup
+          userEmail={user.email || ''}
+          inviteCode={params.code}
+        />
       </div>
     </main>
   )

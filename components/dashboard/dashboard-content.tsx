@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useMemo } from 'react'
 import { SignOutButton } from '@/components/auth/sign-out-button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -15,6 +15,7 @@ import { AddTransactionDialog } from './add-transaction-dialog'
 import { AddAccountDialog } from './add-account-dialog'
 import { BudgetList } from './budget-list'
 import { SettingsDialog } from '@/components/settings/settings-dialog'
+import { InviteQRDialog } from '@/components/household/invite-qr-dialog'
 import { formatCurrency } from '@/lib/format'
 import type { Household, HouseholdMember, Category, Account, Transaction, Budget, HouseholdSettings } from '@/lib/types'
 import { DEFAULT_SETTINGS } from '@/lib/types'
@@ -42,7 +43,6 @@ export function DashboardContent({
   budgets,
   currentMonth
 }: Props) {
-  const [showInviteCode, setShowInviteCode] = useState(false)
   const settings = household.settings || DEFAULT_SETTINGS
 
   // Calculate overview stats
@@ -147,14 +147,10 @@ export function DashboardContent({
                 <span className="text-sm text-muted-foreground">
                   {members.length} member{members.length !== 1 ? 's' : ''}
                 </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-xs h-6 px-2"
-                  onClick={() => setShowInviteCode(!showInviteCode)}
-                >
-                  {showInviteCode ? household.invite_code : 'Show Invite Code'}
-                </Button>
+                <InviteQRDialog
+                  inviteCode={household.invite_code}
+                  householdName={household.name}
+                />
               </div>
             </div>
             <div className="flex items-center gap-4">

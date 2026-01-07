@@ -11,14 +11,16 @@ import { createHouseholdAction, joinHouseholdAction } from '@/app/actions'
 
 interface Props {
   userEmail: string
+  inviteCode?: string
 }
 
-export function HouseholdSetup({ userEmail }: Props) {
+export function HouseholdSetup({ userEmail, inviteCode }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const defaultDisplayName = userEmail.split('@')[0]
+  const defaultTab = inviteCode ? 'join' : 'create'
 
   async function handleCreate(formData: FormData) {
     setLoading(true)
@@ -49,7 +51,7 @@ export function HouseholdSetup({ userEmail }: Props) {
   }
 
   return (
-    <Tabs defaultValue="create" className="w-full">
+    <Tabs defaultValue={defaultTab} className="w-full">
       <TabsList className="grid w-full grid-cols-2">
         <TabsTrigger value="create">Create New</TabsTrigger>
         <TabsTrigger value="join">Join Existing</TabsTrigger>
@@ -114,6 +116,7 @@ export function HouseholdSetup({ userEmail }: Props) {
                   name="inviteCode"
                   placeholder="e.g., ABC12345"
                   className="uppercase"
+                  defaultValue={inviteCode || ''}
                   maxLength={8}
                   required
                   disabled={loading}
